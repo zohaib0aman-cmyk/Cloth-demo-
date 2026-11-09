@@ -1,0 +1,174 @@
+// Each demo copy has its own SQLite file (see .env), so data is fully isolated per lead.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String    @default("")
+  image       String    @default("")
+  sortOrder   Int       @default(0)
+  products    Product[]
+}
+
+model Collection {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  tagline     String    @default("")
+  image       String    @default("")
+  sortOrder   Int       @default(0)
+  featured    Boolean   @default(true)
+  products    Product[]
+}
+
+model Product {
+  id           String       @id @default(cuid())
+  name         String
+  slug         String       @unique
+  description  String
+  fabric       String       @default("")
+  care         String       @default("")
+  price        Int // MRP in rupees
+  discount     Int          @default(0) // percent off MRP
+  images       String // JSON string[]
+  sizes        String // JSON string[]
+  colors       String // JSON {name, hex}[]
+  stock        Int          @default(0)
+  isNew        Boolean      @default(false)
+  isBestseller Boolean      @default(false)
+  isFeatured   Boolean      @default(false)
+  active       Boolean      @default(true)
+  categoryId   String
+  category     Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  collections  Collection[]
+  reviews      Review[]
+  createdAt    DateTime     @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  city      String   @default("")
+  rating    Int
+  title     String   @default("")
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  phone        String    @default("")
+  passwordHash String
+  addresses    Address[]
+  orders       Order[]
+  createdAt    DateTime  @default(now())
+}
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String  @default("Home")
+  name      String
+  phone     String
+  line1     String
+  line2     String  @default("")
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean @default(false)
+}
+
+model Order {
+  id             String       @id @default(cuid())
+  orderNumber    String       @unique
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName   String
+  email          String
+  phone          String
+  address        String // JSON snapshot of the shipping address
+  subtotal       Int
+  discount       Int          @default(0)
+  couponCode     String?
+  gst            Int
+  gstPercent     Int
+  delivery       Int
+  total          Int
+  deliveryOption String       @default("standard")
+  paymentMethod  String
+  paymentRef     String
+  status         String       @default("PLACED")
+  items          OrderItem[]
+  events         OrderEvent[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  name      String
+  image     String
+  size      String
+  color     String
+  price     Int
+  qty       Int
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String
+  note      String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  type        String   @default("PERCENT") // PERCENT | FLAT
+  value       Int
+  minOrder    Int      @default(0)
+  maxDiscount Int      @default(0) // 0 = no cap
+  description String   @default("")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Setting {
+  id                Int     @id @default(1)
+  announcement      String
+  announcementOn    Boolean @default(true)
+  primaryColor      String  @default("#7a2232")
+  accentColor       String  @default("#b8893b")
+  banners           String // JSON Banner[]
+  deliveryCharge    Int     @default(79)
+  expressCharge     Int     @default(149)
+  freeDeliveryAbove Int     @default(1499)
+  codCharge         Int     @default(0)
+  gstPercent        Int     @default(5)
+  email             String
+  phone             String
+  whatsapp          String
+  address           String
+  instagram         String  @default("")
+  facebook          String  @default("")
+  youtube           String  @default("")
+  pinterest         String  @default("")
+}
