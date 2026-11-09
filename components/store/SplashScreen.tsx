@@ -1,11 +1,14 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
+import { BrandInitials } from "../BrandLogo";
 
 /** Branded loading screen with the logo, shown once per browser session. */
 export function SplashScreen() {
+  const brand = useBrand();
   const [show, setShow] = useState(true);
+  const [logoFailed, setLogoFailed] = useState(false);
   useEffect(() => {
     let seen = false;
     try {
@@ -23,14 +26,17 @@ export function SplashScreen() {
           className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-ivory"
           exit={{ opacity: 0, transition: { duration: 0.5 } }}
         >
-          <motion.img
-            src={brand.logoUrl}
-            alt={brand.brandName}
-            className="h-24 w-auto max-w-[240px] object-contain p-1"
+          <motion.div
             initial={{ opacity: 0, scale: 0.85, filter: "blur(6px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          />
+          >
+            {brand.logoUrl && !logoFailed ? (
+              <img src={brand.logoUrl} alt={brand.brandName} className="h-24 w-auto max-w-[240px] object-contain p-1" onError={() => setLogoFailed(true)} />
+            ) : (
+              <BrandInitials size="xl" />
+            )}
+          </motion.div>
           <motion.p
             className="mt-5 font-serif text-2xl font-semibold tracking-tight text-ink"
             initial={{ opacity: 0, y: 8 }}

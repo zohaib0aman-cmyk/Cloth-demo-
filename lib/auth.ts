@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { brand } from "./brand";
+import { defaultBrand as brand } from "./brand";
 import { prisma } from "./db";
 
 const SECRET = process.env.SESSION_SECRET || `zyntra-demo-${brand.leadId}-session-key`;

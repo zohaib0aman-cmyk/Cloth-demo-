@@ -7,12 +7,12 @@ import { Reviews } from "@/components/store/Reviews";
 import { ProductRail } from "@/components/home/HomeSections";
 import { getProductBySlug, getProducts } from "@/lib/catalog";
 import { prisma } from "@/lib/db";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/brand-server";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const p = await getProductBySlug((await params).slug);
+  const [p, brand] = await Promise.all([getProductBySlug((await params).slug), getBrand()]);
   if (!p) return { title: "Product not found" };
   return { title: p.name, description: p.description.slice(0, 155), openGraph: { title: `${p.name} | ${brand.brandName}`, images: p.images.slice(0, 1) } };
 }

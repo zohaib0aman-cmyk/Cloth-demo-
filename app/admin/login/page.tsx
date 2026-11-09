@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { BrandLogo } from "@/components/BrandLogo";
 import { AdminLoginForm } from "@/components/admin/LoginForm";
 import { ADMIN_DEMO, isAdmin } from "@/lib/auth";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/brand-server";
 
 export const metadata: Metadata = { title: "Admin login", robots: { index: false } };
 
 export default async function AdminLogin() {
   if (await isAdmin()) redirect("/admin");
+  const brand = await getBrand();
   return (
     <div className="grain flex min-h-screen items-center justify-center bg-ivory-deep px-4 py-10">
       <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-lift sm:p-9">

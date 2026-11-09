@@ -5,9 +5,10 @@ import { Facebook, Instagram, Mail, MapPin, Phone, Youtube } from "lucide-react"
 import { AnimatedIcon } from "../motion/AnimatedIcon";
 import { BrandLogo } from "../BrandLogo";
 import { useStore } from "./StoreContext";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 
 export function Footer() {
+  const brand = useBrand();
   const { settings, categories } = useStore();
   const year = new Date().getFullYear();
   const socials = [
@@ -24,7 +25,7 @@ export function Footer() {
             <BrandLogo size="md" withName nameClassName="text-ink text-xl" />
           </div>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-ivory/60">
-            Thoughtfully made Indian clothing — handwoven, hand-printed and hand-finished by artisans we know by name.
+            {brand.niche ? `${brand.niche}, thoughtfully made${brand.location ? ` in ${brand.location}` : ""}` : "Thoughtfully made Indian clothing"} — handwoven, hand-printed and hand-finished by artisans we know by name.
           </p>
           <div className="mt-6 flex gap-2">
             {socials.map((s) => (
@@ -70,7 +71,7 @@ export function Footer() {
           <ul className="space-y-3 text-sm">
             <li className="flex gap-3">
               <AnimatedIcon icon={MapPin} size={17} className="mt-0.5 text-accent" />
-              <span>{settings.address}</span>
+              <span>{brand.location ?? settings.address}</span>
             </li>
             <li className="flex gap-3">
               <AnimatedIcon icon={Phone} size={17} className="text-accent" />

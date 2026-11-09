@@ -5,9 +5,10 @@ import { Clock, Mail, MapPin, Phone, Send, CircleCheck } from "lucide-react";
 import { AnimatedIcon } from "../motion/AnimatedIcon";
 import { useStore, whatsappLink } from "./StoreContext";
 import { WhatsAppIcon } from "./WhatsAppButton";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 
 export function ContactClient() {
+  const brand = useBrand();
   const { settings } = useStore();
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -17,7 +18,7 @@ export function ContactClient() {
         {[
           { icon: Phone, label: "Call us", value: settings.phone, href: `tel:${settings.phone.replace(/\s/g, "")}` },
           { icon: Mail, label: "Email", value: settings.email, href: `mailto:${settings.email}` },
-          { icon: MapPin, label: "Studio", value: settings.address },
+          { icon: MapPin, label: "Studio", value: brand.location ?? settings.address },
           { icon: Clock, label: "Hours", value: "Mon – Sat, 10 am – 7 pm IST" },
         ].map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07 }} className="card flex items-start gap-4 p-5">

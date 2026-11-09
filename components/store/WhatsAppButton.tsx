@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 import { useStore, whatsappLink } from "./StoreContext";
 
 export function WhatsAppIcon({ size = 26 }: { size?: number }) {
@@ -12,6 +12,7 @@ export function WhatsAppIcon({ size = 26 }: { size?: number }) {
 }
 
 export function WhatsAppButton() {
+  const brand = useBrand();
   const { settings } = useStore();
   if (!settings.whatsapp) return null;
   return (

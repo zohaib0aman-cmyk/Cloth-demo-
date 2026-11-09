@@ -9,9 +9,12 @@ import { FlyToCartProvider } from "@/components/store/FlyToCart";
 import { getSettings } from "@/lib/settings";
 import { getCategories, getCollections } from "@/lib/catalog";
 import { getCurrentUser } from "@/lib/auth";
+import { getBrand } from "@/lib/brand-server";
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const [settings, categories, collections, user] = await Promise.all([getSettings(), getCategories(), getCollections(true), getCurrentUser()]);
+  const [baseSettings, categories, collections, user, brand] = await Promise.all([getSettings(), getCategories(), getCollections(true), getCurrentUser(), getBrand()]);
+  // In a lead view the lead's city/state replaces the demo store address everywhere on the storefront.
+  const settings = brand.location ? { ...baseSettings, address: brand.location } : baseSettings;
   return (
     <StoreProvider
       value={{

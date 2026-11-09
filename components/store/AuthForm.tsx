@@ -5,10 +5,11 @@ import { useState } from "react";
 import { Lock, Mail, Phone, User as UserIcon, Sparkles } from "lucide-react";
 import { AnimatedIcon } from "../motion/AnimatedIcon";
 import { BrandLogo } from "../BrandLogo";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 import { cn } from "@/lib/format";
 
 export function AuthForm({ next = "/account", demo }: { next?: string; demo: { email: string; password: string } }) {
+  const brand = useBrand();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });

@@ -28,6 +28,31 @@ Then build and start the app. Nothing else should be edited. The brand name and 
 
 The logo can be any shape (square, round or wide). It is fitted into a fixed-height box with `object-contain` and safe padding, so it is never cropped or stretched.
 
+### Personalised demo links (lead tracking ID)
+
+One deployed demo can show any lead's brand. Add the lead's tracking ID to the URL:
+
+```
+https://<your-demo-domain>/?id=ZYN-IN-GJ-000123
+```
+
+- The ID must match `ZYN-XX-XX-000000` (two groups of letters/digits, then six digits). Anything else is ignored and the default demo from `config/brand.json` is shown.
+- On the server only, the demo calls `GET ${LEAD_API_URL}/api/v1/demo/leads/{id}` with `Authorization: Bearer ${LEAD_API_KEY}`. The key and API URL never reach the browser.
+- From the response, only `brand_name`, `logo_url`, `city`, `state` and `niche` are used. They replace the brand name (header, footer, page title, meta description, splash screen, admin, PDF bill, WhatsApp messages), the logo (or the brand initials in a circle when `logo_url` is null), the store location, and a few niche-appropriate lines. All other lead fields are dropped on the server.
+- Lead logos are served through `/api/brand/logo/{id}`, so the Lead System's host never appears in the page source.
+- Lookups are cached for 10 minutes per ID (Next.js `unstable_cache`, `revalidate: 600`). Not-found answers are cached too. Errors are not cached, so a temporary outage recovers on the next visit.
+- If the API returns 404, fails, times out (5 s) or isn't configured, the visitor sees the default demo with no error. The reason is logged on the server as `[lead] …`.
+- The ID is remembered for the browser session (an HttpOnly cookie), so the lead stays branded while browsing the shop, cart and checkout. Opening a link with an invalid `id` resets to the default demo.
+
+#### Environment variables
+
+| Name | Value |
+|---|---|
+| `LEAD_API_URL` | Base URL of the Zyntra Lead System, without a trailing slash or `/api/v1` (e.g. `https://leads.example.com`). |
+| `LEAD_API_KEY` | A **read-only** API key for the demo leads endpoint. Never prefix it with `NEXT_PUBLIC_` and never commit it. |
+
+Locally, copy `.env.example` to `.env.local` and fill in the values (`.env.local` is git-ignored). On Vercel, add them under **Project → Settings → Environment Variables** and redeploy.
+
 ### One-command copy for the Lead System
 
 ```bash
@@ -67,6 +92,7 @@ Coupons to try: `WELCOME10`, `FESTIVE20`, `FLAT300`.
 - Run it on a Node host with a persistent disk (VPS, Docker, Railway, Render, Fly.io). Serverless hosts with read-only filesystems can't keep the SQLite file or uploaded photos.
 - Login cookies are `Secure` in production. If a demo is served over plain HTTP (not HTTPS), set `INSECURE_COOKIES=1`.
 - Optionally set `SESSION_SECRET` to a random string. Otherwise a key is derived from the lead ID.
+- `LEAD_API_URL` and `LEAD_API_KEY` enable personalised demo links (see above). Without them the default demo is always shown.
 
 ---
 
@@ -91,7 +117,9 @@ Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Lucide
 ## Project map
 
 ```
-config/brand.json        ← the only file to edit per lead
+config/brand.json        ← default brand (shown when no lead ID is in the URL)
+middleware.ts            ← validates ?id= and remembers it for the session
+lib/lead.ts              ← server-only Lead System client (10-minute cache)
 public/brand/            ← lead logo goes here
 app/(store)/             ← storefront routes
 app/admin/               ← admin login + panel, server actions in actions.ts

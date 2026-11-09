@@ -10,7 +10,7 @@ import { SmartImage } from "../SmartImage";
 import { useCart, useHydrated, useWishlist } from "@/lib/store/cart";
 import { useStore } from "./StoreContext";
 import { formatINR, cn } from "@/lib/format";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 
 type Hit = { slug: string; name: string; image: string; salePrice: number; category: string };
 
@@ -112,6 +112,7 @@ function SearchOverlay({ open, onClose }: { open: boolean; onClose: () => void }
 }
 
 export function Navbar() {
+  const brand = useBrand();
   const { categories, collections, user } = useStore();
   const pathname = usePathname();
   const hydrated = useHydrated();

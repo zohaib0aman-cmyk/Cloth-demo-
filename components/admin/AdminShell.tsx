@@ -7,7 +7,7 @@ import { ExternalLink, FolderTree, LayoutDashboard, LogOut, Menu, Package, Refre
 import { AnimatedIcon } from "../motion/AnimatedIcon";
 import { BrandLogo } from "../BrandLogo";
 import { adminLogout, resetDemo } from "@/app/admin/actions";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 import { cn } from "@/lib/format";
 
 const NAV = [
@@ -21,6 +21,7 @@ const NAV = [
 ];
 
 export function AdminShell({ children, newOrders }: { children: React.ReactNode; newOrders: number }) {
+  const brand = useBrand();
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);

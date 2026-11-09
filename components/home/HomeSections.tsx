@@ -11,7 +11,7 @@ import { ProductCard } from "../store/ProductCard";
 import { Stars } from "../store/Stars";
 import { useStore } from "../store/StoreContext";
 import { formatINR } from "@/lib/format";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 
 export function SectionHeading({ eyebrow, title, href, cta = "View all" }: { eyebrow: string; title: string; href?: string; cta?: string }) {
   return (
@@ -200,6 +200,7 @@ export function BestsellerGrid({ products }: { products: ProductDTO[] }) {
 }
 
 export function Editorial({ image }: { image: string }) {
+  const brand = useBrand();
   return (
     <section className="bg-ivory-deep">
       <div className="container grid items-center gap-10 py-16 sm:py-24 md:grid-cols-2">
@@ -219,7 +220,7 @@ export function Editorial({ image }: { image: string }) {
           </motion.div>
         </Reveal>
         <Reveal delay={0.1}>
-          <p className="eyebrow">Our craft</p>
+          <p className="eyebrow">{brand.niche ?? "Our craft"}</p>
           <h2 className="section-title mt-3">Made slowly, by hands that remember</h2>
           <p className="mt-5 leading-relaxed text-ink-soft">
             Every {brand.brandName} piece begins with a weaver, a block printer or an embroiderer whose craft has been handed down for generations. We pay fairly, work in small batches and
@@ -279,6 +280,7 @@ export function ReviewWall({ reviews }: { reviews: { id: string; name: string; c
 }
 
 export function InstaGallery({ images }: { images: { src: string; key: string }[] }) {
+  const brand = useBrand();
   const { settings } = useStore();
   return (
     <section className="pb-6">

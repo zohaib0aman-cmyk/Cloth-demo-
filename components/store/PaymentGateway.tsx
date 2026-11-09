@@ -7,7 +7,7 @@ import { useCart, useCheckout, useHydrated } from "@/lib/store/cart";
 import { useTotals } from "./useTotals";
 import { AnimatedIcon } from "../motion/AnimatedIcon";
 import { BrandLogo } from "../BrandLogo";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 import { cn, formatINR } from "@/lib/format";
 import { PAYMENT_LABEL } from "@/lib/types";
 
@@ -49,6 +49,7 @@ const BANKS = ["State Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "K
 const STAGES = ["Connecting securely", "Authorising payment", "Confirming with bank", "Placing your order"];
 
 export function PaymentGateway() {
+  const brand = useBrand();
   const router = useRouter();
   const hydrated = useHydrated();
   const items = useCart((s) => s.items);

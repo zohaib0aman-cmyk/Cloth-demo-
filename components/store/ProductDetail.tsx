@@ -13,7 +13,7 @@ import { useFlyToCart } from "./FlyToCart";
 import { useStore, whatsappLink } from "./StoreContext";
 import { WhatsAppIcon } from "./WhatsAppButton";
 import { cn, formatINR } from "@/lib/format";
-import { brand } from "@/lib/brand";
+import { useBrand } from "@/components/BrandContext";
 
 const CHARTS: Record<string, { head: string[]; rows: string[][]; note: string }> = {
   apparel: {
@@ -204,6 +204,7 @@ function Accordion({ title, children, defaultOpen }: { title: string; children: 
 }
 
 export function ProductDetail({ product }: { product: ProductDTO }) {
+  const brand = useBrand();
   const router = useRouter();
   const { settings } = useStore();
   const [color, setColor] = useState(product.colors[0]?.name ?? "Default");

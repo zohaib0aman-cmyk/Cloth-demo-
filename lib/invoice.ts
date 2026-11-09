@@ -3,7 +3,8 @@ import path from "path";
 import fs from "fs/promises";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
-import { brand, ZYNTRA_DEMO_NOTICE } from "./brand";
+import { defaultBrand, ZYNTRA_DEMO_NOTICE, type ResolvedBrand } from "./brand";
+import { getLeadLogoSource } from "./brand-server";
 import type { OrderDTO } from "./orders";
 import type { StoreSettings } from "./types";
 import { PAYMENT_LABEL } from "./types";
@@ -17,16 +18,18 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/** Loads the logo from brand.json (local /public path or remote URL) and converts any format to PNG for the PDF. */
-async function loadLogo(): Promise<Buffer | null> {
+/** Loads the visitor's logo (lead logo, or brand.json's local/remote logo) and converts any format to PNG for the PDF. */
+async function loadLogo(brand: ResolvedBrand): Promise<Buffer | null> {
+  const source = brand.isLead ? await getLeadLogoSource() : defaultBrand.logoUrl;
+  if (!source) return null;
   try {
     let input: Buffer;
-    if (/^https?:\/\//i.test(brand.logoUrl)) {
-      const res = await fetch(brand.logoUrl);
+    if (/^https?:\/\//i.test(source)) {
+      const res = await fetch(source, { next: { revalidate: 600 }, signal: AbortSignal.timeout(5000) });
       if (!res.ok) return null;
       input = Buffer.from(await res.arrayBuffer());
     } else {
-      const rel = brand.logoUrl.replace(/^\/+/, "");
+      const rel = source.replace(/^\/+/, "");
       input = await fs.readFile(path.join(process.cwd(), "public", rel));
     }
     return await sharp(input, { density: 300 }).resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: false }).png().toBuffer();
@@ -53,9 +56,9 @@ function numberToWordsINR(num: number): string {
   return parts.join(" ");
 }
 
-export async function renderInvoice(order: OrderDTO, settings: StoreSettings): Promise<Buffer> {
-  const logo = await loadLogo();
-  const doc = new PDFDocument({ size: "A4", margin: 48, info: { Title: `Invoice ${order.orderNumber} — ${brand.brandName}`, Author: brand.brandName, Subject: "Tax invoice", Keywords: brand.leadId } });
+export async function renderInvoice(order: OrderDTO, settings: StoreSettings, brand: ResolvedBrand): Promise<Buffer> {
+  const logo = await loadLogo(brand);
+  const doc = new PDFDocument({ size: "A4", margin: 48, info: { Title: `Invoice ${order.orderNumber} — ${brand.brandName}`, Author: brand.brandName, Subject: "Tax invoice", Keywords: brand.isLead ? "demo" : defaultBrand.leadId } });
   doc.registerFont("body", path.join(FONT_DIR, "Manrope-400-normal.ttf"));
   doc.registerFont("bold", path.join(FONT_DIR, "Manrope-700-normal.ttf"));
   doc.registerFont("semi", path.join(FONT_DIR, "Manrope-600-normal.ttf"));
@@ -81,10 +84,14 @@ export async function renderInvoice(order: OrderDTO, settings: StoreSettings): P
   let textX = L;
   if (logo) {
     doc.image(logo, L, y, { fit: [64, 64], align: "center", valign: "center" });
-    textX = L + 78;
+  } else {
+    // No logo: brand initials in a circle, matching the website.
+    doc.circle(L + 32, y + 32, 30).fill(brandRgb);
+    doc.fillColor([255, 255, 255]).font("serif").fontSize(brand.initials.length > 1 ? 24 : 28).text(brand.initials, L, y + 16, { width: 64, align: "center" });
   }
+  textX = L + 78;
   doc.fillColor(ink).font("serif").fontSize(24).text(brand.brandName, textX, y + 8, { width: 260 });
-  doc.fillColor(mute).font("body").fontSize(8.5).text(settings.address, textX, doc.y + 2, { width: 250 });
+  doc.fillColor(mute).font("body").fontSize(8.5).text(brand.location ?? settings.address, textX, doc.y + 2, { width: 250 });
   doc.text(`${settings.phone}  ·  ${settings.email}`, textX, doc.y + 1, { width: 260 });
 
   doc.fillColor(brandRgb).font("bold").fontSize(9).text("TAX INVOICE", R - 200, y + 4, { width: 200, align: "right", characterSpacing: 2 });
@@ -174,7 +181,7 @@ export async function renderInvoice(order: OrderDTO, settings: StoreSettings): P
   // Demo notice
   doc.roundedRect(L, y, W, 40, 6).lineWidth(0.8).strokeColor([184, 137, 59]).stroke();
   doc.fillColor([120, 86, 30]).font("semi").fontSize(9).text(ZYNTRA_DEMO_NOTICE, L + 14, y + 9, { width: W - 28, align: "center" });
-  doc.fillColor(mute).font("body").fontSize(7.5).text(`Demo reference ${brand.leadId}`, L + 14, doc.y + 2, { width: W - 28, align: "center" });
+  if (!brand.isLead) doc.fillColor(mute).font("body").fontSize(7.5).text(`Demo reference ${defaultBrand.leadId}`, L + 14, doc.y + 2, { width: W - 28, align: "center" });
   y += 58;
 
   doc.fillColor(ink).font("serif").fontSize(15).text(`Thank you for shopping with ${brand.brandName}`, L, y, { width: W, align: "center" });

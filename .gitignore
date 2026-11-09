@@ -10,3 +10,7 @@ data/uploads/*
 .DS_Store
 npm-debug.log*
 .vercel
+
+# local secrets (LEAD_API_KEY etc.)
+.env.local
+.env*.local

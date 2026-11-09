@@ -8,9 +8,10 @@ import { MotionIcon } from "@/components/motion/AnimatedIcon";
 import { Reveal } from "@/components/motion/Reveal";
 import { SmartImage } from "@/components/SmartImage";
 import { formatDate, formatINR, safeJSON } from "@/lib/format";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/brand-server";
 
 export default async function Dashboard() {
+  const brand = await getBrand();
   const [orders, products, customers] = await Promise.all([
     prisma.order.findMany({ include: { items: true }, orderBy: { createdAt: "desc" } }),
     prisma.product.findMany({ orderBy: { stock: "asc" }, include: { category: true } }),

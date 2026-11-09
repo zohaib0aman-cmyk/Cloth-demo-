@@ -3,9 +3,12 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/brand-server";
 
-export const metadata: Metadata = { title: { default: "Admin", template: `%s · Admin | ${brand.brandName}` }, robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  return { title: { default: "Admin", template: `%s · Admin | ${brand.brandName}` }, robots: { index: false } };
+}
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   if (!(await isAdmin())) redirect("/admin/login");

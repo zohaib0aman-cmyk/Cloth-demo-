@@ -5,15 +5,17 @@ import { PageHero } from "@/components/store/PageHero";
 import { Reveal } from "@/components/motion/Reveal";
 import { SmartImage } from "@/components/SmartImage";
 import { MotionIcon } from "@/components/motion/AnimatedIcon";
-import { brand } from "@/lib/brand";
+import { getBrand } from "@/lib/brand-server";
 import { IMAGES } from "@/lib/seed-data";
 
 export const metadata: Metadata = { title: "Our story" };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const brand = await getBrand();
+  const intro = [brand.niche, brand.location && `from ${brand.location}`].filter(Boolean).join(" ");
   return (
     <>
-      <PageHero eyebrow="Our story" title={`The hands behind ${brand.brandName}`} text="A small label with a big respect for Indian craft, honest fabric and clothes that last." />
+      <PageHero eyebrow="Our story" title={`The hands behind ${brand.brandName}`} text={`${intro ? `${intro} — a` : "A"} small label with a big respect for Indian craft, honest fabric and clothes that last.`} />
       <section className="container grid items-center gap-10 py-16 md:grid-cols-2 sm:py-24">
         <Reveal className="aspect-[4/5] overflow-hidden rounded-[2rem]">
           <SmartImage src={IMAGES.lifestyle[0]} alt="Our studio" fallbackKey="dress" className="h-full w-full object-cover" />
