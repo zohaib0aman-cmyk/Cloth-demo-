@@ -68,3 +68,24 @@ export async function getLeadBrand(id: string): Promise<LeadBrand | null> {
     return null;
   }
 }
+
+/**
+ * Tells the Lead System that this lead opened their demo (used to schedule the follow-up).
+ * Failures are logged and ignored — the visitor never sees an error.
+ */
+export async function reportLeadView(id: string): Promise<void> {
+  const base = process.env.LEAD_API_URL?.replace(/\/+$/, "");
+  const key = process.env.LEAD_API_KEY;
+  if (!base || !key) return;
+  try {
+    const res = await fetch(`${base}/api/v1/demo/leads/${encodeURIComponent(id)}/viewed`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok && res.status !== 404) console.error(`[lead] ${id}: view report failed HTTP ${res.status}`);
+  } catch (e) {
+    console.error(`[lead] ${id}: view report failed. ${e instanceof Error ? e.message : String(e)}`);
+  }
+}

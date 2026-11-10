@@ -10,6 +10,7 @@ import { getSettings } from "@/lib/settings";
 import { getCategories, getCollections } from "@/lib/catalog";
 import { getCurrentUser } from "@/lib/auth";
 import { getBrand } from "@/lib/brand-server";
+import { LeadViewBeacon } from "@/components/store/LeadViewBeacon";
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const [baseSettings, categories, collections, user, brand] = await Promise.all([getSettings(), getCategories(), getCollections(true), getCurrentUser(), getBrand()]);
@@ -32,6 +33,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <Footer />
         <CartDrawer />
         <WhatsAppButton />
+        {brand.isLead && <LeadViewBeacon />}
       </FlyToCartProvider>
     </StoreProvider>
   );
