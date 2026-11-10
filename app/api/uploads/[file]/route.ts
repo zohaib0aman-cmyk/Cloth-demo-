@@ -1,18 +1,13 @@
-import path from "path";
-import fs from "fs/promises";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 
-const TYPES: Record<string, string> = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif", ".avif": "image/avif" };
-
-/** Serves photos uploaded from the admin panel (stored per demo copy in data/uploads). */
+/** Serves photos uploaded from the admin panel (stored in this demo's own database). */
 export async function GET(_req: Request, { params }: { params: Promise<{ file: string }> }) {
-  const name = path.basename((await params).file);
-  const ext = path.extname(name).toLowerCase();
-  if (!TYPES[ext]) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  try {
-    const buf = await fs.readFile(path.join(process.cwd(), "data", "uploads", name));
-    return new NextResponse(new Uint8Array(buf), { headers: { "Content-Type": TYPES[ext], "Cache-Control": "public, max-age=31536000, immutable" } });
-  } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
+  const id = (await params).file.replace(/\.[a-z0-9]+$/i, "");
+  if (!/^[a-z0-9]{10,40}$/i.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const row = await prisma.upload.findUnique({ where: { id } });
+  if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return new NextResponse(new Uint8Array(row.data), {
+    headers: { "Content-Type": row.contentType, "Cache-Control": "public, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff" },
+  });
 }

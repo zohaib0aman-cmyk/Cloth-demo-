@@ -4,8 +4,8 @@
  *
  *   node scripts/create-demo.mjs --out ../demos/ZYN-1042 --name "Kesar & Co." --logo ./kesar.png --lead ZYN-1042
  *
- * It copies the project (without node_modules, build output, database or uploads), writes config/brand.json
- * and drops the logo into public/brand/. No code is changed. Then: cd <out> && npm install && npm run build && npm start
+ * It copies the project (without node_modules, build output or local env files), writes config/brand.json
+ * and drops the logo into public/brand/. No code is changed. Then set DATABASE_URL to this demo's own Postgres database and: cd <out> && npm install && npm run build && npm start
  */
 import fs from "fs";
 import path from "path";
@@ -31,8 +31,7 @@ function copy(src, dest) {
     if (SKIP.has(entry.name)) continue;
     const s = path.join(src, entry.name);
     const d = path.join(dest, entry.name);
-    const rel = path.relative(root, s);
-    if (/^prisma\/.*\.db(-journal)?$/.test(rel) || (rel.startsWith(path.join("data", "uploads")) && entry.name !== ".gitkeep" && entry.isFile())) continue;
+    if (entry.name === ".env" || entry.name === ".env.local") continue;
     if (entry.isDirectory()) {
       fs.mkdirSync(d, { recursive: true });
       copy(s, d);

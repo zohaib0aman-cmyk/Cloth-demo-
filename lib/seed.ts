@@ -21,6 +21,7 @@ export async function seedDatabase(prisma: PrismaClient) {
     prisma.category.deleteMany(),
     prisma.coupon.deleteMany(),
     prisma.setting.deleteMany(),
+    prisma.upload.deleteMany(),
   ]);
 
   await prisma.setting.create({ data: { id: 1, ...DEFAULT_SETTINGS } });

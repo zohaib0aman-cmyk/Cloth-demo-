@@ -3,10 +3,7 @@ node_modules
 out
 *.tsbuildinfo
 next-env.d.ts
-prisma/*.db
-prisma/*.db-journal
-data/uploads/*
-!data/uploads/.gitkeep
+.env
 .DS_Store
 npm-debug.log*
 .vercel

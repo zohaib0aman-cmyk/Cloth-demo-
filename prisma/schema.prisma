@@ -1,10 +1,11 @@
-// Each demo copy has its own SQLite file (see .env), so data is fully isolated per lead.
+// PostgreSQL. Give each demo deployment its own database so one lead's data never appears in another's.
+// The URL is resolved by scripts/db-prepare.mjs and lib/db.ts (DATABASE_URL, or POSTGRES_URL from a Vercel integration).
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -171,4 +172,12 @@ model Setting {
   facebook          String  @default("")
   youtube           String  @default("")
   pinterest         String  @default("")
+}
+
+/// Photos uploaded from the admin panel. Stored in the database so they survive on serverless hosts.
+model Upload {
+  id          String   @id @default(cuid())
+  data        Bytes
+  contentType String
+  createdAt   DateTime @default(now())
 }

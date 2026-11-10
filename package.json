@@ -9,12 +9,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "db:prepare": "prisma generate && prisma db push --skip-generate && tsx prisma/seed.ts --if-empty",
-    "db:reset": "prisma db push --skip-generate --force-reset && tsx prisma/seed.ts",
+    "db:prepare": "node scripts/db-prepare.mjs",
+    "db:reset": "node scripts/db-prepare.mjs --reset",
     "postinstall": "prisma generate"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

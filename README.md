@@ -51,7 +51,7 @@ https://<your-demo-domain>/?id=ZYN-IN-GJ-000123
 | `LEAD_API_URL` | Base URL of the Zyntra Lead System, without a trailing slash or `/api/v1` (e.g. `https://leads.example.com`). |
 | `LEAD_API_KEY` | A **read-only** API key for the demo leads endpoint. Never prefix it with `NEXT_PUBLIC_` and never commit it. |
 
-Locally, copy `.env.example` to `.env.local` and fill in the values (`.env.local` is git-ignored). On Vercel, add them under **Project → Settings → Environment Variables** and redeploy.
+Locally, copy `.env.example` to `.env` and fill in the values (`.env` is git-ignored). On Vercel, add them under **Project → Settings → Environment Variables** and redeploy.
 
 ### One-command copy for the Lead System
 
@@ -60,24 +60,25 @@ node scripts/create-demo.mjs --out ../demos/ZYN-1042 --name "Kesar & Co." --lead
 cd ../demos/ZYN-1042 && npm install && npm run build && npm start
 ```
 
-The script copies the project (skipping `node_modules`, build output, the database and uploads), writes `config/brand.json` and drops the logo into `public/brand/`. No code changes.
+The script copies the project (skipping `node_modules`, build output and local env files), writes `config/brand.json` and drops the logo into `public/brand/`. No code changes.
 
 ### Data isolation per lead
 
-Each copy has its **own SQLite database** (`prisma/demo.db`, set in `.env`) and its own uploads folder (`data/uploads/`). One lead's orders, products or settings never appear in another lead's demo. On first build the database is created and filled with sample data automatically. The admin **Reset demo** button restores that sample data before the next viewing.
+Each deployment uses its **own PostgreSQL database** (`DATABASE_URL`). Give every demo copy a separate database so one lead's orders, products or settings never appear in another lead's demo. Photos uploaded in admin are stored in that same database. On first build the tables are created and filled with sample data automatically. The admin **Reset demo** button restores that sample data before the next viewing.
 
 ---
 
 ## Quick start
 
 ```bash
+cp .env.example .env   # set DATABASE_URL to a PostgreSQL database
 npm install
-npm run dev        # http://localhost:3000 (creates and seeds the database on first run)
+npm run dev        # http://localhost:3000 (creates and seeds the tables on first run)
 # or production:
 npm run build && npm start
 ```
 
-Requires Node.js 18.18+ (tested on Node 22).
+Requires Node.js 20.12+ (tested on Node 22) and a PostgreSQL database.
 
 | What | Where | Demo login |
 |---|---|---|
@@ -89,7 +90,7 @@ Coupons to try: `WELCOME10`, `FESTIVE20`, `FLAT300`.
 
 ### Deployment notes
 
-- Run it on a Node host with a persistent disk (VPS, Docker, Railway, Render, Fly.io). Serverless hosts with read-only filesystems can't keep the SQLite file or uploaded photos.
+- **Vercel:** import the repo, then add a Postgres database from the project's **Storage** tab (Prisma Postgres or Neon). It sets the connection string for you, and the build creates the tables and sample data. Any other Node host works too with `DATABASE_URL` set to a Postgres URL.
 - Login cookies are `Secure` in production. If a demo is served over plain HTTP (not HTTPS), set `INSECURE_COOKIES=1`.
 - Optionally set `SESSION_SECRET` to a random string. Otherwise a key is derived from the lead ID.
 - `LEAD_API_URL` and `LEAD_API_KEY` enable personalised demo links (see above). Without them the default demo is always shown.
@@ -112,7 +113,7 @@ Coupons to try: `WELCOME10`, `FESTIVE20`, `FLAT300`.
 
 ## Tech stack
 
-Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Lucide icons · Prisma + SQLite · PDFKit (+ sharp for logos) · Zustand (bag and wishlist).
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Lucide icons · Prisma + PostgreSQL · PDFKit (+ sharp for logos) · Zustand (bag and wishlist).
 
 ## Project map
 
